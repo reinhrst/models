@@ -61,7 +61,6 @@ def add_notches():
         notches.append(notch)
 
     notch0.select = True
-    notch0.select = True
     bpy.ops.object.duplicate()
     bpy.context.selected_objects[0].name = "notch2_ob"
     bpy.context.selected_objects[1].name = "notch3_ob"
@@ -71,6 +70,7 @@ def add_notches():
             vertix.co[0], vertix.co[1] = \
                 -vertix.co[1], vertix.co[0]
         notches.append(notch)
+        notch.select = False
     return notches
 
 
@@ -87,11 +87,26 @@ def add_corner_cutouts():
 
 
 def build_single(base=(0, 0, 0)):
-    add_cuboid("sideplate0", (-40, -45, 0), (80, 16, 5))
-    add_cuboid("sideplate1", (-40,  45, 0), (80, -16, 5))
+    sideplate0_co = add_cuboid("sideplate0_cutout", (-38, -43, -2),
+                               (76, 16, 5))
+    sideplate0_co.hide = True
+    sideplate0 = add_cuboid("sideplate0", (-40, -45, 0), (80, 16, 5))
+    bpy.context.scene.objects.active = sideplate0
+    bpy.ops.object.modifier_add(type="BOOLEAN")
+    sideplate0.modifiers["Boolean"].operation = "DIFFERENCE"
+    sideplate0.modifiers["Boolean"].object = sideplate0_co
 
-    topcutout = add_cuboid("topcutout", (-28, -28, 1.5), (56, 56, 10))
-    topcutout.hide = True
+    sideplate1_co = add_cuboid("sideplate1_cutout", (-38, 43, -2),
+                               (76, -16, 5))
+    sideplate1_co.hide = True
+    sideplate1 = add_cuboid("sideplate1", (-40,  45, 0), (80, -16, 5))
+    bpy.context.scene.objects.active = sideplate1
+    bpy.ops.object.modifier_add(type="BOOLEAN")
+    sideplate1.modifiers["Boolean"].operation = "DIFFERENCE"
+    sideplate1.modifiers["Boolean"].object = sideplate1_co
+
+    uppercutout = add_cuboid("uppercutout", (-28, -28, 1.5), (56, 56, 10))
+    uppercutout.hide = True
 
     innercutout = add_cuboid("innercutout", (-26, -26, -10), (52, 52, 30))
     bpy.context.scene.objects.active = innercutout
@@ -100,7 +115,7 @@ def build_single(base=(0, 0, 0)):
     innercutout.hide = True
 
     sphere_radius = 161.6/0.8
-    origin = (0, 0, 13 - sphere_radius)
+    origin = [0, 0, 13 - sphere_radius]
     bpy.ops.mesh.primitive_uv_sphere_add(size=sphere_radius, location=origin)
     spheremask = bpy.context.object
     spheremask.name = "spheremask"
@@ -110,6 +125,29 @@ def build_single(base=(0, 0, 0)):
 
     spheremask.hide = True
     spheremask.select = False
+
+    origin[2] -= 2
+    bpy.ops.mesh.primitive_uv_sphere_add(size=sphere_radius, location=origin)
+    spheremask2 = bpy.context.object
+    spheremask2.name = "spheremask2"
+    bpy.ops.object.modifier_add(type="SUBSURF")
+    spheremask2.modifiers["Subsurf"].levels = 1
+    spheremask2.hide = True
+    spheremask2.select = False
+
+    top_cutout = add_cuboid("top_cutout", (-38, -28, -1), (6, 56, 10))
+    bpy.context.scene.objects.active = top_cutout
+    bpy.ops.object.modifier_add(type="BOOLEAN")
+    top_cutout.modifiers["Boolean"].operation = "INTERSECT"
+    top_cutout.modifiers["Boolean"].object = spheremask2
+    top_cutout.hide = True
+
+    bottom_cutout = add_cuboid("bottom_cutout", (38, -28, -1), (-6, 56, 10))
+    bpy.context.scene.objects.active = bottom_cutout
+    bpy.ops.object.modifier_add(type="BOOLEAN")
+    bottom_cutout.modifiers["Boolean"].operation = "INTERSECT"
+    bottom_cutout.modifiers["Boolean"].object = spheremask2
+    bottom_cutout.hide = True
 
     notches = add_notches()
     corners = add_corner_cutouts()
@@ -121,20 +159,12 @@ def build_single(base=(0, 0, 0)):
     raisedplate.modifiers["Boolean"].operation = "INTERSECT"
     raisedplate.modifiers["Boolean"].object = spheremask
 
-    bpy.ops.object.modifier_add(type="BOOLEAN")
-    raisedplate.modifiers["Boolean.001"].operation = "DIFFERENCE"
-    raisedplate.modifiers["Boolean.001"].object = topcutout
-
-    bpy.ops.object.modifier_add(type="BOOLEAN")
-    raisedplate.modifiers["Boolean.002"].operation = "DIFFERENCE"
-    raisedplate.modifiers["Boolean.002"].object = innercutout
-
-    for i, notch in enumerate(notches):
+    for i, cutout in enumerate([uppercutout, innercutout, top_cutout,
+                                bottom_cutout] + notches + corners):
         bpy.ops.object.modifier_add(type="BOOLEAN")
-        raisedplate.modifiers["Boolean.%03d" % (i+3)].operation = "DIFFERENCE"
-        raisedplate.modifiers["Boolean.%03d" % (i+3)].object = notch
+        raisedplate.modifiers["Boolean.%03d" % (i+1)].operation = "DIFFERENCE"
+        raisedplate.modifiers["Boolean.%03d" % (i+1)].object = cutout
 
-    for i, corner in enumerate(corners):
-        bpy.ops.object.modifier_add(type="BOOLEAN")
-        raisedplate.modifiers["Boolean.%03d" % (i+7)].operation = "DIFFERENCE"
-        raisedplate.modifiers["Boolean.%03d" % (i+7)].object = corner
+    sideplate0.select = True
+    sideplate1.select = True
+    raisedplate.select = True
