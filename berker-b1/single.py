@@ -15,7 +15,7 @@ def setup():
     # seems to not work
     return
     bpy.context.scene.system = "METRIC"
-    bpy.context.scene.scale_length = 0.01  # work in cm
+    bpy.context.scene.scale_length = 0.001  # work in mm
     bpy.context.space_data.grid_scale = 0.01
 
 
@@ -45,10 +45,10 @@ def add_cuboid(name, location, size):
 
 def add_notches():
     notches = []
-    notch0 = add_cuboid("notch0", (-1.55, -2.75, -0.15), (0.5, 5.5, 0.45))
+    notch0 = add_cuboid("notch0", (-15.5, -27.5, -1.5), (5., 55., 4.5))
     for i in range(4):
         notch0.data.vertices[i].co[0] += \
-            (-1.3 - notch0.data.vertices[i].co[0]) / (0.5 / 0.3)
+            (-13 - notch0.data.vertices[i].co[0]) / (5 / 3)
 
     notch0.select = True
     notch0.hide = True
@@ -57,7 +57,7 @@ def add_notches():
     bpy.context.selected_objects[0].name = "notch1_ob"
     for notch in bpy.context.selected_objects:
         for vertix in notch.data.vertices:
-            vertix.co[0] += 2.6
+            vertix.co[0] += 26
         notches.append(notch)
 
     notch0.select = True
@@ -76,10 +76,10 @@ def add_notches():
 
 def add_corner_cutouts():
     corners = [
-        add_cuboid("corner0", (-2.8, -2.8, 0.1), (0.95, 0.95, 1)),
-        add_cuboid("corner1", (2.8, -2.8, 0.1), (-0.95, 0.95, 1)),
-        add_cuboid("corner2", (2.8, 2.8, 0.1), (-0.95, -0.95, 1)),
-        add_cuboid("corner3", (-2.8, 2.8, 0.1), (0.95, -0.95, 1)),
+        add_cuboid("corner0", (-28, -28, 1), (9.5, 9.5, 10)),
+        add_cuboid("corner1", (28, -28, 1), (-9.5, 9.5, 10)),
+        add_cuboid("corner2", (28, 28, 1), (-9.5, -9.5, 10)),
+        add_cuboid("corner3", (-28, 28, 1), (9.5, -9.5, 10)),
     ]
     for corner in corners:
         corner.hide = True
@@ -87,20 +87,20 @@ def add_corner_cutouts():
 
 
 def build_single(base=(0, 0, 0)):
-    add_cuboid("sideplate0", (-4, -4.5, 0), (8, 1.6, 0.5))
-    add_cuboid("sideplate1", (-4,  4.5, 0), (8, -1.6, 0.5))
+    add_cuboid("sideplate0", (-40, -45, 0), (80, 16, 5))
+    add_cuboid("sideplate1", (-40,  45, 0), (80, -16, 5))
 
-    topcutout = add_cuboid("topcutout", (-2.8, -2.8, 0.15), (5.6, 5.6, 1))
+    topcutout = add_cuboid("topcutout", (-28, -28, 1.5), (56, 56, 10))
     topcutout.hide = True
 
-    innercutout = add_cuboid("innercutout", (-2.6, -2.6, -1), (5.2, 5.2, 3))
+    innercutout = add_cuboid("innercutout", (-26, -26, -10), (52, 52, 30))
     bpy.context.scene.objects.active = innercutout
     bpy.ops.object.modifier_add(type="BEVEL")
     innercutout.modifiers["Bevel"].segments = 5
     innercutout.hide = True
 
-    sphere_radius = 16.16/0.8
-    origin = (0, 0, 1.3 - sphere_radius)
+    sphere_radius = 161.6/0.8
+    origin = (0, 0, 13 - sphere_radius)
     bpy.ops.mesh.primitive_uv_sphere_add(size=sphere_radius, location=origin)
     spheremask = bpy.context.object
     spheremask.name = "spheremask"
@@ -114,7 +114,7 @@ def build_single(base=(0, 0, 0)):
     notches = add_notches()
     corners = add_corner_cutouts()
 
-    raisedplate = add_cuboid("raisedplate", (-4.05, -3, 0), (8.1, 6, 1))
+    raisedplate = add_cuboid("raisedplate", (-40.5, -30, 0), (81, 60, 10))
     bpy.context.scene.objects.active = raisedplate
 
     bpy.ops.object.modifier_add(type="BOOLEAN")
