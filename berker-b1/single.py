@@ -79,4 +79,4 @@ def build_single(base=(0, 0, 0)):
 
     objects = sideplates + [raisedplate]
     shared.select(objects)
-    return objects
+    return (objects, [])

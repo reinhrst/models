@@ -53,6 +53,15 @@ def add_endplates(base, nrblocks):
     return [endplate0, endplate1]
 
 
+def add_cylincer(name, radius, depth, location):
+    bpy.ops.mesh.primitive_cylinder_add(radius=radius, depth=depth,
+                                        location=location, vertices=256)
+    item = bpy.context.object
+    item.name = name
+    item.select = False
+    return item
+
+
 def add_sideplates(base):
     sideplate0_co = add_cuboid("sideplate0_cutout", (-38, -43, -2),
                                (76, 16, 5), base)
